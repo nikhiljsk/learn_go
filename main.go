@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"os"
+	"strconv"
 )
 
 var x = 42
@@ -114,6 +115,61 @@ func main() {
 	fmt.Printf("ikb\t%v\n", ikb)
 	fmt.Printf("imb\t%v\n", imb)
 	fmt.Printf("igb\t%v\n", igb)
+
+	// print ASCII
+	fmt.Println("Print ASCII")
+	for i := 98; i < 122; i++ {
+		fmt.Printf("%v\t%v\t%#U\t%v\n", i, string(i), i, strconv.Itoa(i))
+	}
+
+	// If conditionals
+	fmt.Println("If conditionals")
+	if xy := 3; xy != 3 { // Scope is restricted to this if conditional
+		fmt.Println(xy)
+	} else if xy == 3 {
+		fmt.Println("Valid here as well!")
+	}
+
+	// Switch Case
+	fmt.Println("Switch Case")
+	switch { // A missing switch expression is equal to true, so it searches for true in a case
+	case (1 == 2):
+		fmt.Println("1 == 2")
+	case (1 != 2):
+		fmt.Println("1 != 2")
+		fallthrough
+	case (2 != 3): // quits here since there is no fallthrough
+		fmt.Println("2 != 3")
+	case (3 != 4):
+		fmt.Println("3 != 4")
+		fallthrough // goes to default now
+	default: // default only runs if no other case was true, (unless you specify fallthrough)
+		fmt.Println("Great!")
+	}
+
+	scase := "hello"
+	switch scase {
+	case "nothello":
+		fmt.Println("This won't be printed")
+	default: // default can occur anywhere in the case, functions the same
+		fmt.Println("Ahh! testing")
+	case "hello", "there":
+		fmt.Println("This is it!")
+	}
+
+	var stype interface{} = "hello"
+	switch v := stype.(type) {
+	case int:
+		fmt.Println("int", v)
+	case nil:
+		fmt.Println("nil", v)
+	case float64:
+		fmt.Println("float64", v)
+	case string:
+		fmt.Println("string", v)
+	default:
+		fmt.Println("You win!!", v)
+	}
 
 	// Takes input but treats space as seperator
 	fmt.Println("Write just a word:")
