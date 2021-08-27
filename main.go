@@ -35,10 +35,10 @@ const (
 )
 
 const (
-	_   = iota             // now 1
-	ikb = 1 << (iota * 10) // now 2
-	imb = 1 << (iota * 10) // now 3
-	igb = 1 << (iota * 10) // now 4
+	_   = iota
+	ikb = 1 << (iota * 10) // now 1
+	imb = 1 << (iota * 10) // now 2
+	igb = 1 << (iota * 10) // now 3
 )
 
 func fizzBuzz(n int) {
@@ -170,6 +170,61 @@ func main() {
 	default:
 		fmt.Println("You win!!", v)
 	}
+
+	// Arrays
+	var arr = [5]int{1, 2, 3, 4}
+
+	// Slices
+	var sarr = []int{1, 2, 4, 5, 6, 7}
+	fmt.Println("Arrays/Slices", arr, sarr, len(sarr), cap(sarr))
+
+	for i, v := range sarr {
+		fmt.Println("index & Value", i, v)
+	}
+	fmt.Println(sarr[:4], sarr[:2]) // Negative values don't work
+
+	temp := []int{7, 8, 0}
+	newSarr := append(append(sarr, temp...), 7, 8, 9) // ... is use to unfurl all the values, similar to * in python
+	fmt.Println("Appended now!", newSarr)
+
+	newSarr = append(newSarr[:4], newSarr[6:]...)
+	fmt.Println("Deletion of slice elements", newSarr)
+
+	fmt.Println("Make in Array") // Slices are just a datastructure with 3 fields, (ptr to array, len, capacity)
+	makeArr := make([]int, 2, 3)
+	makeArr = append(makeArr, 1, 2)
+	fmt.Printf("Array %v\tLength %v\tCapacity %v\n", makeArr, len(makeArr), cap(makeArr))
+	makeArr = append(makeArr, 3)
+	fmt.Printf("Array %v\tLength %v\tCapacity %v\n", makeArr, len(makeArr), cap(makeArr))
+	makeArr = append(makeArr, 4, 5)
+	fmt.Printf("Array %v\tLength %v\tCapacity %v\n", makeArr, len(makeArr), cap(makeArr)) // Capacity is doubled if array overflowed
+
+	doubleSlice := [][]int{newSarr, makeArr}
+	fmt.Println("2D Slice:", doubleSlice)
+
+	// Maps
+	phonebook := map[string]int{
+		"Nikhil": 1234,
+		"JSK":    783,
+	}
+	// Access a value, by default if int, so value is 0. So use if exists bool value
+	if v, ok := phonebook["JSK"]; ok { // Also called as the 'comma ok' idiom
+		fmt.Println("Map - Requested entry exists", v)
+	} else {
+		fmt.Println("Map - Get the hell out of here!")
+	}
+	fmt.Println("Hihi. I don't actually exist. But I have zero as value", phonebook["pspk"])
+	if v, ok := phonebook["JSK"]; ok {
+		fmt.Println("Value exists. Go ahead and delete!", v)
+		delete(phonebook, "JSK")
+	}
+
+	// Creating a map of slices of strings
+	mapStrings := map[string][]string{
+		"agrdne": {"garden", "danger"},
+		"apn":    {"nap", "pan"},
+	}
+	fmt.Println("Nice job!", mapStrings)
 
 	// Takes input but treats space as seperator
 	fmt.Println("Write just a word:")
