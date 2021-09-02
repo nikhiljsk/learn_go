@@ -210,4 +210,11 @@ Need to explore more on big integers and signed integers
 - Rune is 4 bytes (32 bits) (int32) in utf-8, byte is for uint8
 - No `while` statement in go
 - Arrays are the building blocks of slices, it is clear not to use arrays, use slices instead.
--
+- For embedded structs the inner type gets promoted to the outer type. (More like the child class can access the elements of the parent class - You can access those variables using child.Age or child.Parent.Age, both give the same value unless you have the variable age defined in both the structs, in case of collision, it gives preference to local level first)
+- The embedded struct can be anonymousField which doens't have a varialbe associated, for example you can just inherit person and use it instead of mentioning `p1 person`
+- If you are really concerned about performance declare variables from largest to smallest
+- Variadic parameters can has 0 to unlimited parameters. When has to be a final parameter
+- Defer is a keyword when used executes the statement it is associated with at the end of function exit
+- Functions are first class citizens, cause they can be passed into another function, returned from another function and can be assigned to another variable
+- Callback - Passing a function as an argument
+- Closures - Limiting the scope of the variables. Useful for things like incrementor functions where the value of the variable is stored in-memory and increments each time you call the function, kind of similar to iota

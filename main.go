@@ -41,6 +41,115 @@ const (
 	igb = 1 << (iota * 10) // now 3
 )
 
+type person struct {
+	firstName string
+	lastName  string
+	age       int
+	icecreams []string
+}
+
+type vehicle struct {
+	doors int
+	color string
+}
+
+type truck struct {
+	vehicle
+	fourWheel bool
+}
+
+type sedan struct {
+	vehicle
+	luxury bool
+}
+
+func (t truck) start(greeting string) {
+	fmt.Println("Inside start function! Hi! ", greeting)
+	fmt.Println("Trying to get the color right!", t.color)
+}
+
+func (s sedan) start(greeting string) {
+	fmt.Println("Inside start function! Hi! ", greeting)
+	fmt.Println("Trying to get the color right!", s.color)
+}
+
+// Since both Sedan and Truck have implemented start function, both can now be a type of interface
+// Interfaces are really helpful to direct to corresponding function type. Example, an interface SHAPE can
+// direct to appropriate area functions of both circle and square, which have the area method implemented differently
+type automobile interface {
+	start(a string)
+}
+
+// Since this function takes in multiple types - Polymorphism
+func nationalSafetyCheck(a automobile) {
+	// Switch case with types, and assertion in the cases for strict variable access
+	switch c := a.(type) {
+	case sedan:
+		fmt.Println("After rigorous tests, you have achieved 5 star in sedan category", a.(sedan).luxury, c)
+	case truck:
+		fmt.Println("After rigorous tests, you have achieved 5 star in truck category", a.(truck).fourWheel, c)
+	}
+
+}
+
+func something(name string, unlimited ...string) bool {
+	defer fmt.Println("Hey there, I'll only be executed at the end of this function!") // executes just before the return call is executed!
+	fmt.Println("Name:", name)
+	fmt.Printf("Type\t%T\n:", unlimited)
+	for i, v := range unlimited {
+		fmt.Printf("\ti:%v\tv:%v\n", i, v)
+	}
+	return true
+}
+
+func returnAnotherFunc() func() int {
+	x := 5
+	return func() int {
+		fmt.Println("Executed once - ReturnAFunction", x)
+		return x
+	}
+}
+
+func sumAll(numbers ...int) int {
+	var total int
+	for _, v := range numbers {
+		total += v
+	}
+	return int(total)
+}
+
+func callbackFunc(f func(num ...int) int, allNumbers ...int) int {
+	// Find the sum of only odd numbers
+	var oddNumbers []int
+	for _, v := range allNumbers {
+		if v%2 != 0 {
+			oddNumbers = append(oddNumbers, v)
+		}
+	}
+	return sumAll(oddNumbers...)
+}
+
+func incrementor() func() int {
+	x := 0
+	return func() int {
+		x++
+		return x
+	}
+}
+
+func fakeIncrementor() int {
+	x := 0
+	x++
+	return x
+}
+
+func factorial(n int) int {
+	if n == 1 {
+		return 1
+	}
+	return n * factorial(n-1)
+}
+
 func fizzBuzz(n int) {
 	i := 0
 	for i < n {
@@ -119,7 +228,7 @@ func main() {
 	// print ASCII
 	fmt.Println("Print ASCII")
 	for i := 98; i < 122; i++ {
-		fmt.Printf("%v\t%v\t%#U\t%v\n", i, string(i), i, strconv.Itoa(i))
+		fmt.Printf("%v\t%v\t%#U\t%v\t%v\n", i, string(i), i, strconv.Itoa(i), string(123858))
 	}
 
 	// If conditionals
@@ -151,13 +260,25 @@ func main() {
 	switch scase {
 	case "nothello":
 		fmt.Println("This won't be printed")
-	default: // default can occur anywhere in the case, functions the same
-		fmt.Println("Ahh! testing")
 	case "hello", "there":
 		fmt.Println("This is it!")
+	default: // default can occur anywhere in the case, functions the same
+		fmt.Println("Ahh! testing")
 	}
 
+	// Define a variable that can take in multiple value types cause any type has interface{} (i.e no functions implemented)
 	var stype interface{} = "hello"
+	stype = 45
+	stype = true
+	stype = map[string]int{
+		"Great!": 1,
+	}
+
+	// The following three lines don't work cause golang is static type and you're trying to manipulate the variable type
+	// ntype := 4
+	// ntype = "String there!"
+	// fmt.Println(ntype)
+
 	switch v := stype.(type) {
 	case int:
 		fmt.Println("int", v)
@@ -225,6 +346,118 @@ func main() {
 		"apn":    {"nap", "pan"},
 	}
 	fmt.Println("Nice job!", mapStrings)
+
+	// Structs
+	fmt.Println("Structs")
+	p1 := person{
+		firstName: "Nikhil",
+		lastName:  "JSK",
+		age:       22,
+		icecreams: []string{"chocolate", "butterscotch"},
+	}
+	fmt.Println("Here's one struct", p1)
+	p2 := person{
+		firstName: "Akhil",
+		lastName:  "JSK2",
+		age:       24,
+		icecreams: []string{"chocolate", "strawberry"},
+	}
+	fmt.Println("Here's another", p2)
+
+	people := map[string]person{
+		p1.lastName: p1,
+		p2.lastName: p2,
+	}
+
+	fmt.Println("Map:", people)
+
+	for k, v := range people {
+		fmt.Println("FirstName", v.firstName)
+		fmt.Println("LastName:", k)
+		fmt.Println("My Fav Flavors:")
+		for _, flavor := range v.icecreams {
+			fmt.Println("\t", flavor)
+		}
+	}
+
+	s1 := sedan{
+		vehicle: vehicle{
+			doors: 4,
+			color: "white",
+		},
+		luxury: true,
+	}
+	t1 := truck{
+		vehicle: vehicle{
+			doors: 2,
+			color: "blue",
+		},
+		fourWheel: false,
+	}
+	fmt.Println("Embed struct:", s1, "\n", t1)
+
+	report := struct {
+		errors int
+		logs   string
+	}{
+		errors: 2,
+		logs:   "Here's one error\n Here's the other",
+	}
+
+	fmt.Println("Anonymous Struct!!", report)
+
+	// Functions!
+	fmt.Println("Functions!")
+	randomWords := []string{"is", "the best", "you", "can", "find outthere!"}
+	fmt.Println(something("Nikhil", randomWords...))
+
+	// Interfaces!
+	fmt.Println("Starting Interfaces ÍÎ˝Í€€")
+	s1.start("Skoda Rapid")
+	t1.start("Volvo Truck")
+
+	nationalSafetyCheck(s1)
+	nationalSafetyCheck(t1)
+
+	// Anonymous Function
+	fmt.Println("Anonymous. Sarr before:", sarr)
+	func(test []int) {
+		test = append(test, 19903)
+		fmt.Println("Inside anonymous function!", test)
+	}(sarr)
+	fmt.Println("Anonymous. Sarr After:", sarr)
+
+	funcVariable := fizzBuzz // Since everything in golang is just a type!
+	funcVariable(10)
+
+	// Return a func
+	fmt.Println("Return a func")
+	fmt.Printf("Type of a function that returns another function %T\n", returnAnotherFunc()())
+	returnAnotherFunc()()
+
+	// Callback function - Passing a function as a paramter to another function!
+	fmt.Println("Callback function - Passing a function as a paramter to another function!")
+	fmt.Println("Sum of all numbers:", sumAll(18, 1)) // Modulo operator is not defined for float
+	fmt.Println("Sum of all odd numbers:", callbackFunc(sumAll, 18, 1))
+
+	// Closure
+	fmt.Println("Closure")
+	firstIncrementor := incrementor()
+	secondIncrementor := incrementor()
+	fmt.Println("First:", firstIncrementor())
+	fmt.Println("First:", firstIncrementor()) // Since this is a closure, 1 is incremented to 2
+	fmt.Println("First:", firstIncrementor())
+	fmt.Println("Second:", secondIncrementor())
+	fmt.Println("Second:", secondIncrementor())
+
+	fmt.Println("Difference b/w closure and normal function")
+	fakeInc := fakeIncrementor()
+	fmt.Println("fakeInc:", fakeInc)
+	fmt.Println("fakeInc:", fakeInc)
+
+	// Recursion
+	fmt.Println("Recursion")
+	fmt.Println("Factorial", factorial(5))
 
 	// Takes input but treats space as seperator
 	fmt.Println("Write just a word:")
