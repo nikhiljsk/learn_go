@@ -2,7 +2,86 @@
 
 # Table of Contents
 
+# Learn How To Code: Google's Go (golang) Programming Language
+
+- Created by Google and published 1st Opensource version on 2012 to handle concurrency and multiple cores efficiently for webservices. YT is entirely now in GoLang
+- Creator of Node JS has abandoned in favor of Golang 🍭
+- You can check the hash version to see if you downloaded the original file. Checksums
+
+```bash
+openssl sha -sha256 <folder>
+
+# get env variables
+go env
+
+# formats the code in current directory
+go fmt
+
+# creates an executable in current directory
+go build main.go # Creates ./main 
+
+# Creates an executable in bin directory which you can then use directly to run your program
+go install main.go
+
+go mod init <package_name> # inits your module, package name can be anything not just domain
+go build/ go test # Runs and gets and tracks the dependencies
+go list -m all # Lists all the direct and indirect packages
+go get # get
+go mod tidy # cleans the packages
+go get <package_name>@<version> # that can get a specific version
+go list -m versions <package_name> # list all versions
+go list -deps <p_name> # lists all dependenciesch
+
+go get -u <package_name> # get or update a package
+```
+
+- GOROOT contains the binary exec file of go
+- GOPATH contains the folder path for your workspace
+- your workspace should have three folders, bin - contains binaries, src - contains all the code in a folder structured format according to the package, then we have package which maintains archives to cache modules
+- Go Mod file is a package manager that tracks all the direct packages that are being used in your package and keeps them organized version wise. You can upgrade or downgrade the use of direct packages that will be tracked in go.mod file
+- `...` means unlimited parameters, variadic parameters in a function
+
+Need to explore more on big integers and signed integers
+
+- Identifiers - Just named entites, can be anything. Some predeclared identifiers include bool, true, false, nil, append close, byte, int etc.
+- Keywords - That can't be used as an identifiers ex - break, default, defer, go
+- Statement is nothing but an instruction to computer
+- `var` is used when you're declaring global, and short declaration operator is only within the function scope
+- You can use `%T` in printf to see the type of the variable
+- Go is a static prog. lang. so a variable can only hold value of a certain type
+- To declare a raw string which also includes the escape characters use ticks (`)
+- It is conversion in golang, not casting
+- Every value in go is an empty interface and is expressed as interface{}
+- Everything is pass by value in golang
+- UTF - 8 is just another encodinng scheme like ascii, but is far better and most widely used as it supports multiple languges, also created by golang inventors
+- Four gens of computers so far, vaccum tube, transistors, integrated chips, microprocessors all to store 0/1's
+- You can use int8 to store signed integers (-128 to 127) using only 8 bits, but the same uint8 can store unsigned (0 to 255). You can just use int that will use int64 or int32 underlying based on the OS instruction set
+- Rune is 4 bytes (32 bits) (int32) in utf-8, byte is for uint8
+- No `while` statement in go
+- Arrays are the building blocks of slices, it is clear not to use arrays, use slices instead.
+- For embedded structs the inner type gets promoted to the outer type. (More like the child class can access the elements of the parent class - You can access those variables using child.Age or child.Parent.Age, both give the same value unless you have the variable age defined in both the structs, in case of collision, it gives preference to local level first)
+- The embedded struct can be anonymousField which doens't have a varialbe associated, for example you can just inherit person and use it instead of mentioning `p1 person`
+- If you are really concerned about performance declare variables from largest to smallest
+- Variadic parameters can has 0 to unlimited parameters. When has to be a final parameter
+- Defer is a keyword when used executes the statement it is associated with at the end of function exit
+- Functions are first class citizens, cause they can be passed into another function, returned from another function and can be assigned to another variable
+- Callback - Passing a function as an argument
+- Closures - Limiting the scope of the variables. Useful for things like incrementor functions where the value of the variable is stored in-memory and increments each time you call the function, kind of similar to iota
+- This website converts you JSON to struct ([mholt.github.io/json-to-go](https://mholt.github.io/json-to-go/))
+
+![Screenshot 2021-09-04 at 12.26.50 AM.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/25c5061d-d211-45c6-906b-9880cd2fdc0a/Screenshot_2021-09-04_at_12.26.50_AM.png)
+
+- Golang was the first language which leveraged multi-core cpu's, as it was built in 2007 and in 2006 Intel's dual core cpu was widely popular!
+- Concurrency is a design pattern that allows the new code to run on multiple CPUs but that does not guarantee parallelism the only thing that guarantees parallelism is the number of CPU cores you have
+- You can use `func init(){}` that runs before the main function
+- Method Sets - Since the receiver is of value type, you can either send a value or pointer to that value like below (Needs more digging on this). Sometimes, even if the accepted value is a pointer, a value can be sent. Incase of waitGroup that happens, and my basic understanding is that it has something to do with the method types and not just at the interface level
+- Race Condition - Different routines trying to access the same shared variables and resulting in bugs
+- You could find the race condition by using `go build -race main.go` which tries to see if any data race is found and the number. Gomaxproc is the number of cores you want it to run on. Default is max
+- There are read and write locks as well in Mutex
+
 # Go: The Complete Developer's Guide
+
+Might have to revisit the course 🙂
 
 GO CLI
 
@@ -154,67 +233,3 @@ Key-value pairs
 - If you pass a value into a channel, then you have to receive it somewhere.
 
     ![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/6422f0cf-6849-4c63-9ecd-04a6bc3f81fd/Screenshot_2021-05-18_at_12.44.52_PM.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/6422f0cf-6849-4c63-9ecd-04a6bc3f81fd/Screenshot_2021-05-18_at_12.44.52_PM.png)
-
-# Learn How To Code: Google's Go (golang) Programming Language
-
-- Created by Google and published 1st Opensource version on 2012 to handle concurrency and multiple cores efficiently for webservices. YT is entirely now in GoLang
-- Creator of Node JS has abandoned in favor of Golang 🍭
-- You can check the hash version to see if you downloaded the original file. Checksums
-
-```bash
-openssl sha -sha256 <folder>
-
-# get env variables
-go env
-
-# formats the code in current directory
-go fmt
-
-# creates an executable in current directory
-go build main.go # Creates ./main 
-
-# Creates an executable in bin directory which you can then use directly to run your program
-go install main.go
-
-go mod init <package_name> # inits your module, package name can be anything not just domain
-go build/ go test # Runs and gets and tracks the dependencies
-go list -m all # Lists all the direct and indirect packages
-go get # get
-go mod tidy # cleans the packages
-go get <package_name>@<version> # that can get a specific version
-go list -m versions <package_name> # list all versions
-go list -deps <p_name> # lists all dependenciesch
-```
-
-- GOROOT contains the binary exec file of go
-- GOPATH contains the folder path for your workspace
-- your workspace should have three folders, bin - contains binaries, src - contains all the code in a folder structured format according to the package, then we have package which maintains archives to cache modules
-- Go Mod file is a package manager that tracks all the direct packages that are being used in your package and keeps them organized version wise. You can upgrade or downgrade the use of direct packages that will be tracked in go.mod file
-- `...` means unlimited parameters, variadic parameters in a function
-
-Need to explore more on big integers and signed integers
-
-- Identifiers - Just named entites, can be anything. Some predeclared identifiers include bool, true, false, nil, append close, byte, int etc.
-- Keywords - That can't be used as an identifiers ex - break, default, defer, go
-- Statement is nothing but an instruction to computer
-- `var` is used when you're declaring global, and short declaration operator is only within the function scope
-- You can use `%T` in printf to see the type of the variable
-- Go is a static prog. lang. so a variable can only hold value of a certain type
-- To declare a raw string which also includes the escape characters use ticks (`)
-- It is conversion in golang, not casting
-- Every value in go is an empty interface and is expressed as interface{}
-- Everything is pass by value in golang
-- UTF - 8 is just another encodinng scheme like ascii, but is far better and most widely used as it supports multiple languges, also created by golang inventors
-- Four gens of computers so far, vaccum tube, transistors, integrated chips, microprocessors all to store 0/1's
-- You can use int8 to store signed integers (-128 to 127) using only 8 bits, but the same uint8 can store unsigned (0 to 255). You can just use int that will use int64 or int32 underlying based on the OS instruction set
-- Rune is 4 bytes (32 bits) (int32) in utf-8, byte is for uint8
-- No `while` statement in go
-- Arrays are the building blocks of slices, it is clear not to use arrays, use slices instead.
-- For embedded structs the inner type gets promoted to the outer type. (More like the child class can access the elements of the parent class - You can access those variables using child.Age or child.Parent.Age, both give the same value unless you have the variable age defined in both the structs, in case of collision, it gives preference to local level first)
-- The embedded struct can be anonymousField which doens't have a varialbe associated, for example you can just inherit person and use it instead of mentioning `p1 person`
-- If you are really concerned about performance declare variables from largest to smallest
-- Variadic parameters can has 0 to unlimited parameters. When has to be a final parameter
-- Defer is a keyword when used executes the statement it is associated with at the end of function exit
-- Functions are first class citizens, cause they can be passed into another function, returned from another function and can be assigned to another variable
-- Callback - Passing a function as an argument
-- Closures - Limiting the scope of the variables. Useful for things like incrementor functions where the value of the variable is stored in-memory and increments each time you call the function, kind of similar to iota

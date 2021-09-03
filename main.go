@@ -2,9 +2,15 @@ package main
 
 import (
 	"bufio"
+	"encoding/json"
 	"fmt"
 	"os"
+	"runtime"
+	"sort"
 	"strconv"
+	"sync"
+	"sync/atomic"
+	"time"
 )
 
 var x = 42
@@ -12,6 +18,13 @@ var y = "James Bond"
 var z = true
 
 type phoneNumber int
+
+var wg sync.WaitGroup
+
+type jsontemp struct {
+	Doors int    `json:"number_of_doors"`       // How the name shoud appear in JSON
+	Color string `json:"what_color, omitempty"` // Omit if the value is empty in the result JSON
+}
 
 // iota :) - Works only with const
 const (
@@ -81,13 +94,21 @@ type automobile interface {
 }
 
 // Since this function takes in multiple types - Polymorphism
-func nationalSafetyCheck(a automobile) {
+func nationalSafetyCheck(a automobile) { // If the reciever here is a pointer, you only have to send a pointer.
 	// Switch case with types, and assertion in the cases for strict variable access
 	switch c := a.(type) {
 	case sedan:
 		fmt.Println("After rigorous tests, you have achieved 5 star in sedan category", a.(sedan).luxury, c)
 	case truck:
 		fmt.Println("After rigorous tests, you have achieved 5 star in truck category", a.(truck).fourWheel, c)
+	case *truck:
+		fmt.Println("Ahh! I see you sent a pointer. We don't do that here. Send me back the original :). Exempting for now!")
+		a.start("*truck") // You can't access the variables of sedan/truck directly, you have to use the switch type statement
+	case *sedan:
+		fmt.Println("Ahh! I see you sent a pointer. We don't do that here. Send me back the original :) Exempting for now!", a)
+		a.start("*sedan")
+	default:
+		fmt.Println("No automobie sent for testing. What do you want?")
 	}
 
 }
@@ -126,7 +147,7 @@ func callbackFunc(f func(num ...int) int, allNumbers ...int) int {
 			oddNumbers = append(oddNumbers, v)
 		}
 	}
-	return sumAll(oddNumbers...)
+	return f(oddNumbers...)
 }
 
 func incrementor() func() int {
@@ -148,6 +169,57 @@ func factorial(n int) int {
 		return 1
 	}
 	return n * factorial(n-1)
+}
+
+func concurrentFactorial(n int) int {
+	if n == 1 {
+		wg.Done() // Telling the compiler one goroutine is done!
+		return 1
+	}
+	time.Sleep(time.Second * 1)
+	// runtime.Gosched() // You could use this instead of time.sleep, which basically says go do something else, and come back to this thread!
+	return n * concurrentFactorial(n-1)
+}
+
+// func concurrentBigFactorial(n big.Int) big.Int {
+// 	var temp big.Int
+// 	if cmp := n.Cmp(temp.SetUint64(1)); cmp == 0 {
+// 		// wg.Done() // Telling the compiler one goroutine is done!
+// 		return *big.NewInt(1)
+// 	}
+// 	z := n.Sub(&n, big.NewInt(1))
+// 	fmt.Printf("JSK - Z\t%v\n", z.String())
+// 	y := concurrentBigFactorial(*z)
+// 	fmt.Printf("JSK - Y\t%v\n", y.String())
+// 	return *n.Mul(&n, &y)
+// }
+
+func changeNotConstant(number *int) int {
+	*number = *number + 88
+	return *number
+}
+
+func pointersExp(s *sedan) {
+	fmt.Println("Hi Sedan! Your color now:", (*s).color)
+	fmt.Println("Hi Sedan! Your color now:", s.color)
+	(*s).color = "Base"
+	fmt.Println("Hi Sedan! Your color later:", (*s).color)
+	fmt.Println("Hi Sedan! Your color later:", s.color)
+
+}
+
+type groupedJsonTemp []jsontemp
+
+func (jt groupedJsonTemp) Len() int {
+	return len(jt)
+}
+
+func (jt groupedJsonTemp) Less(i int, j int) bool {
+	return jt[i].Doors > jt[j].Doors
+}
+
+func (jt groupedJsonTemp) Swap(i int, j int) {
+	jt[i], jt[j] = jt[j], jt[i]
 }
 
 func fizzBuzz(n int) {
@@ -459,6 +531,160 @@ func main() {
 	fmt.Println("Recursion")
 	fmt.Println("Factorial", factorial(5))
 
+	// Pointer
+	var value int = 5
+	var ptr *int = &value
+	fmt.Println("Pointer", value, *&value, *ptr, ptr, &value)
+	*ptr = 53
+	fmt.Println("Pointer", value, *&value, *ptr, ptr, &value)
+
+	// Method Sets
+	fmt.Println("Method Sets")
+	nationalSafetyCheck(t1) // Since the receiver is of value type, you can either send a value or pointer to that value like below
+	nationalSafetyCheck(&t1)
+
+	notConstant := 5
+	fmt.Println("Playing with Pointers!! Before:", notConstant)
+	changeNotConstant(&notConstant)
+	fmt.Println("Playing with Pointers!! After:", notConstant)
+
+	fmt.Println("Sedan color before:", s1.color)
+	pointersExp(&s1)
+	fmt.Println("Sedan color after:", s1.color)
+
+	// JSON - Marshal & Unmarshal
+	v1 := jsontemp{
+		Doors: 3,
+		Color: "pink",
+	}
+	v2 := jsontemp{
+		Doors: 4,
+		Color: "hot rod",
+	}
+	bytes, err := json.Marshal([]jsontemp{v1, v2})
+	if err != nil {
+		fmt.Println("Damn! Something bad happened!", err)
+	}
+	fmt.Println("Marshalled!", string(bytes), "Bytes!", bytes)
+
+	var data *[]jsontemp
+	err = json.Unmarshal(bytes, &data)
+	if err != nil {
+		fmt.Println("Damn! Something bad happened!", err)
+	}
+	fmt.Println("UnMarshalled!", data, "Deferenced!", (*data)[0].Color)
+
+	// Sort
+	fmt.Println("Sorting")
+	sortNums := []int{4, 23, 5, 1, 1}
+	sort.Ints(sortNums)
+	fmt.Println("Sorted!", sortNums)
+	sort.Sort(sort.Reverse(sort.IntSlice(sortNums))) // sort.Reverse needs the interface Interface to be implemented by three funcs (Len, Less, Swap)
+	// Here we have IntSlice which implements all three funcs and so we can use that to pass to Reverse, we can't pass sort.Ints
+	// Since Reverse returns an Interface, we need to send it to sort.Sort that accepts Interface
+	fmt.Println("Sorted Reversed!", sortNums)
+
+	sortStrings := []string{"hello", "011", "_", "Hello"}
+	fmt.Println("Before:", sortStrings)
+	sort.Strings(sortStrings)
+	fmt.Println("After:", sortStrings)
+	sort.Sort(sort.Reverse(sort.StringSlice(sortStrings))) // sort.StringSlice(sortStrings) -- Means conversion of []string to Interface!!
+	fmt.Println("Way After:", sortStrings)
+
+	// Sort on structs
+	fmt.Println("Sort on structs")
+	// Sort vehicles based on number of doors
+	// allVehicles := []jsontemp{v1, v2} // If you implement this way, you won't be able to do `func (a []jsontemp)` so use a type for this
+	// Now, since we'll be using sort.Sort, we have to impement Interface with three funcs (Len, Swap, Less)
+	dataJson := groupedJsonTemp{v1, v2}
+	fmt.Println("Before struct:", dataJson)
+	sort.Sort(dataJson)
+	fmt.Println("After struct:", dataJson)
+
+	// Concurrency
+	fmt.Println("Concurrency")
+	fmt.Println("OS", runtime.GOOS)
+	fmt.Println("ARCH", runtime.GOARCH)
+	fmt.Println("Number of CPUs", runtime.NumCPU())
+	fmt.Println("Number of Go Routines", runtime.NumGoroutine())
+	fmt.Println("Number of C Go Calls?", runtime.NumCgoCall())
+
+	// WaitGroup
+	wg.Add(3) // Asking the compiler to wait for 3 goroutines to exit
+	go func() {
+		fmt.Println("Factorial for 5", concurrentFactorial(5)) // Since you are using println you have to declare it inside a anony. func, otherwise goroutine is not properly spawned
+	}()
+	go func() {
+		fmt.Println("Factorial for 6", concurrentFactorial(6))
+	}()
+	go func() {
+		fmt.Println("Factorial for 10", concurrentFactorial(10))
+	}()
+
+	fmt.Println("Number of CPUs. After:", runtime.NumCPU())
+	fmt.Println("Number of Go Routines. After:", runtime.NumGoroutine())
+	fmt.Println("Number of C Go Calls?. After:", runtime.NumCgoCall())
+
+	// Big Integers - Unfinished!
+	// za := concurrentBigFactorial(*big.NewInt(5))
+	// fmt.Printf("Big Integer:\t%T\t%v\n", za, za.String())
+	// go fmt.Println("Factorial for 5", concurrentBigFactorial(uint64(5)))
+	// go fmt.Println("Factorial for 20", concurrentBigFactorial(uint64(20)))
+	// go fmt.Println("Factorial for 100", concurrentBigFactorial(uint64(100)))
+	// wg.Wait() // If we use here, then the compiler will calculate and display first and only then take the input from user
+
+	// Race Condition
+	var wg2 sync.WaitGroup
+	fmt.Println("Race Condition!")
+	wg2.Add(20)
+	var counter int
+	for i := 0; i < 20; i++ { // Ideally the value here must be 20
+		go func() {
+			temp := counter
+			temp++
+			runtime.Gosched()
+			counter = temp
+			wg2.Done()
+		}()
+	}
+	wg2.Wait()
+	fmt.Println("Counter with Race Condition:", counter)
+
+	// Handling Race condition with Mutex
+	var wg3 sync.WaitGroup
+	var mu sync.Mutex
+	fmt.Println("Handling Race condition with Mutex")
+	wg3.Add(20)
+	var counter2 int
+	for i := 0; i < 20; i++ { // the value here must be 20
+		go func() {
+			mu.Lock()
+			temp := counter2
+			temp++
+			runtime.Gosched()
+			counter2 = temp
+			mu.Unlock()
+			wg3.Done()
+		}()
+	}
+	wg3.Wait()
+	fmt.Println("Counter with Mutex:", counter2)
+
+	// Atomic
+	var wg4 sync.WaitGroup
+	fmt.Println("Atomic")
+	wg4.Add(20)
+	var counter3 int32
+	for i := 0; i < 20; i++ { // Ideally the value here must be 20
+		go func() {
+			atomic.AddInt32(&counter3, 1)
+			runtime.Gosched()
+			wg4.Done()
+		}()
+	}
+	wg4.Wait()
+	fmt.Println("Counter with Atomic:", atomic.LoadInt32(&counter3))
+
 	// Takes input but treats space as seperator
 	fmt.Println("Write just a word:")
 	var userName string
@@ -500,4 +726,5 @@ func main() {
 	totalSum := getSum(3, 5, 10)
 	fmt.Print("Sum:", totalSum)
 
+	wg.Wait() // We can wait here to save time!
 }
