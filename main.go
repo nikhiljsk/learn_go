@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"encoding/json"
 	"fmt"
+	"math/big"
 	"os"
 	"runtime"
 	"sort"
@@ -20,6 +21,7 @@ var z = true
 type phoneNumber int
 
 var wg sync.WaitGroup
+var wg5 sync.WaitGroup
 
 type jsontemp struct {
 	Doors int    `json:"number_of_doors"`       // How the name shoud appear in JSON
@@ -181,18 +183,31 @@ func concurrentFactorial(n int) int {
 	return n * concurrentFactorial(n-1)
 }
 
-// func concurrentBigFactorial(n big.Int) big.Int {
-// 	var temp big.Int
-// 	if cmp := n.Cmp(temp.SetUint64(1)); cmp == 0 {
-// 		// wg.Done() // Telling the compiler one goroutine is done!
-// 		return *big.NewInt(1)
-// 	}
-// 	z := n.Sub(&n, big.NewInt(1))
-// 	fmt.Printf("JSK - Z\t%v\n", z.String())
-// 	y := concurrentBigFactorial(*z)
-// 	fmt.Printf("JSK - Y\t%v\n", y.String())
-// 	return *n.Mul(&n, &y)
-// }
+func concurrentBigFactorial(n big.Int) *big.Int { // Here the return type is of pointer, cause z.Mul function return type is actually &z
+	var z big.Int
+	if cmp := n.Cmp(big.NewInt(1)); cmp == 0 {
+		wg5.Done()
+		return big.NewInt(1)
+	}
+	time.Sleep(100)
+	z.Set(&n)                                   // n
+	n.Sub(&n, big.NewInt(1))                    // n-1
+	return z.Mul(&z, concurrentBigFactorial(n)) // n * fact(n-1)
+
+	// Some explanation and steps on how on got to the solution!!
+	// Big integers don't allow shallow copy, so you can just assign and modify, that will modify the newly created variable
+	// Snippet from the doc
+	// To "copy" an Int value, an existing (or newly allocated) Int must be set to a new value using the Int.Set method;
+	// shallow copies of Ints are not supported and may lead to errors.
+	// ------------------------------------------------------------
+	// z.Set(&n)                // n
+	// n.Sub(&n, big.NewInt(1)) // n-1
+	// fmt.Printf("JSK - Z\t%v\t%v\t%v\n", z.String(), z, &z)
+	// fmt.Printf("JSK - n\t%v\t%v\t%v\n", n.String(), n, &n)
+	// y := concurrentBigFactorial(n) // call factorial(n-1)
+	// fmt.Printf("JSK - Y\t%v\t%v\t%v\n", y.String(), y, &y)
+	// return n.Mul(&n, y) // call n * factorial(n-1)
+}
 
 func changeNotConstant(number *int) int {
 	*number = *number + 88
@@ -250,6 +265,38 @@ func getSum(a int, b int, n int) int {
 		}
 	}
 	return sum
+}
+
+func launchThread(c chan int) {
+	for i := 0; i < 5; i++ {
+		c <- i
+	}
+	close(c)
+}
+
+func send(e, o, q chan<- int) {
+	for i := 0; i < 10; i++ {
+		if i%2 == 0 {
+			e <- i
+		} else {
+			o <- i
+		}
+	}
+	q <- 0
+}
+
+func receive(e, o, q <-chan int) {
+	for {
+		select {
+		case value := <-e:
+			fmt.Println("Even!", value)
+		case value := <-o:
+			fmt.Println("Odd!", value)
+		case value := <-q:
+			fmt.Println("Quit!", value)
+			return
+		}
+	}
 }
 
 func main() {
@@ -573,6 +620,7 @@ func main() {
 		fmt.Println("Damn! Something bad happened!", err)
 	}
 	fmt.Println("UnMarshalled!", data, "Deferenced!", (*data)[0].Color)
+	fmt.Println("UnMarshalled!", data, "Deferenced!", *data)
 
 	// Sort
 	fmt.Println("Sorting")
@@ -626,12 +674,20 @@ func main() {
 	fmt.Println("Number of C Go Calls?. After:", runtime.NumCgoCall())
 
 	// Big Integers - Unfinished!
-	// za := concurrentBigFactorial(*big.NewInt(5))
-	// fmt.Printf("Big Integer:\t%T\t%v\n", za, za.String())
-	// go fmt.Println("Factorial for 5", concurrentBigFactorial(uint64(5)))
-	// go fmt.Println("Factorial for 20", concurrentBigFactorial(uint64(20)))
-	// go fmt.Println("Factorial for 100", concurrentBigFactorial(uint64(100)))
-	// wg.Wait() // If we use here, then the compiler will calculate and display first and only then take the input from user
+	fmt.Println("Number of Go Routines - Big Integer", runtime.NumGoroutine())
+
+	// WaitGroup
+	wg5.Add(3) // Asking the compiler to wait for 3 goroutines to exit
+	go func() {
+		fmt.Println("Factorial for 50", concurrentBigFactorial(*big.NewInt(50)))
+	}()
+	go func() {
+		fmt.Println("Factorial for 100", concurrentBigFactorial(*big.NewInt(100)))
+	}()
+	go func() {
+		fmt.Println("Factorial for 101", concurrentBigFactorial(*big.NewInt(101)))
+	}()
+	fmt.Println("Number of Go Routines. After Big Integer:", runtime.NumGoroutine())
 
 	// Race Condition
 	var wg2 sync.WaitGroup
@@ -685,6 +741,37 @@ func main() {
 	wg4.Wait()
 	fmt.Println("Counter with Atomic:", atomic.LoadInt32(&counter3))
 
+	// Channels
+	fmt.Println("Channels!")
+	ch := make(chan int) // unbuffered channel
+	go func() {          // Without this go routine, the ch <- <value> fails, as both sending and receiving should occur at the same time, and without a go routine that won't be possible
+		ch <- 44
+	}()
+	fmt.Println("Channel value received:", <-ch)
+
+	ch2 := make(chan int, 1) // Create a buffered channel of size 1, so now it allows upto 1 vaule to sit in there, if more than one is sent, it fails with deadlock
+	ch2 <- 44
+	fmt.Println("Channel value received:", <-ch2)
+
+	// Directional channels
+	ch3 := make(chan<- int) // send-only type channel
+	ch4 := make(<-chan int) // receive-only type channel // This means channels can start out bidirectional, but magically become directional simply by assigning a regular channel to a variable of a constrained type
+	fmt.Printf("%T %T", ch3, ch4)
+
+	ch5 := make(chan int)
+
+	go launchThread(ch5)
+	for i := range ch5 {
+		fmt.Println(i)
+	}
+
+	// Select statement
+	e := make(chan int)
+	o := make(chan int)
+	q := make(chan int)
+	go send(e, o, q)
+	receive(e, o, q)
+
 	// Takes input but treats space as seperator
 	fmt.Println("Write just a word:")
 	var userName string
@@ -727,4 +814,5 @@ func main() {
 	fmt.Print("Sum:", totalSum)
 
 	wg.Wait() // We can wait here to save time!
+	wg5.Wait()
 }

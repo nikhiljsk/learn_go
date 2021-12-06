@@ -18,7 +18,7 @@ go env
 go fmt
 
 # creates an executable in current directory
-go build main.go # Creates ./main 
+go build main.go # Creates ./main
 
 # Creates an executable in bin directory which you can then use directly to run your program
 go install main.go
@@ -33,6 +33,10 @@ go list -m versions <package_name> # list all versions
 go list -deps <p_name> # lists all dependenciesch
 
 go get -u <package_name> # get or update a package
+
+# ENVS related to private
+go env GOPRIVATE
+go env -w GOPRIVATE="github.ibm.com"
 ```
 
 - GOROOT contains the binary exec file of go
@@ -41,7 +45,10 @@ go get -u <package_name> # get or update a package
 - Go Mod file is a package manager that tracks all the direct packages that are being used in your package and keeps them organized version wise. You can upgrade or downgrade the use of direct packages that will be tracked in go.mod file
 - `...` means unlimited parameters, variadic parameters in a function
 
-Need to explore more on big integers and signed integers
+<aside>
+💡 Need to explore more on big integers and signed integers
+
+</aside>
 
 - Identifiers - Just named entites, can be anything. Some predeclared identifiers include bool, true, false, nil, append close, byte, int etc.
 - Keywords - That can't be used as an identifiers ex - break, default, defer, go
@@ -78,10 +85,14 @@ Need to explore more on big integers and signed integers
 - Race Condition - Different routines trying to access the same shared variables and resulting in bugs
 - You could find the race condition by using `go build -race main.go` which tries to see if any data race is found and the number. Gomaxproc is the number of cores you want it to run on. Default is max
 - There are read and write locks as well in Mutex
+- Send-only and receive-only type channel, directional channels. These channels can start out bidirectional, but some can become directional simply by assigning a regular channel to a variable of a constrained type.
 
 # Go: The Complete Developer's Guide
 
-Might have to revisit the course 🙂
+<aside>
+💡 Might have to revisit the course 🙂
+
+</aside>
 
 GO CLI
 
@@ -112,31 +123,37 @@ func main() { // Main function which is called by OS?
 }
 ```
 
-Go is a Static Typed language unlike Python which is a dynamic typed language
+<aside>
+💡 Go is a Static Typed language unlike Python which is a dynamic typed language
+
+</aside>
 
 ```go
 // Two ways of initializing a variable
 var card string = "Hello"
 card := "Hello" //Initialization NOT Replace
 
-// For global initialization former 
-// meathod works, later doesn't 
+// For global initialization former
+// meathod works, later doesn't
 
-// If you change the value of global 
-// variable in any function, it changes the 
+// If you change the value of global
+// variable in any function, it changes the
 // global value instead of local
 ```
 
-Array (Fixed Size) vs Slice (Re-sizeable arrays) - Slices should be homogenous (data types)
+<aside>
+💡 Array (Fixed Size) vs Slice (Re-sizeable arrays) - Slices should be homogenous (data types)
+
+</aside>
 
 - Since we don't have classes in GO, we can create custom data types and then associate functions to it.
 
 ```go
 Things to syntax-work-on
 1. Types - Int, string, array, slice
-2. Functions - return types, pass arguments with types (custom aswell) 
+2. Functions - return types, pass arguments with types (custom aswell)
 3. For loop - iterate over arrays/slices
-4. Custom types 
+4. Custom types
 5. Receiver functions/Method for custom types
 
 ```
@@ -157,7 +174,7 @@ But!!
 that we are goin to deal with pointers that's it.
 
 ----
-In golang you can call receiver function with just normal variable without using pointer. 
+In golang you can call receiver function with just normal variable without using pointer.
 It automatically type converts
 ```
 
@@ -173,13 +190,14 @@ It automatically type converts
 
     ![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/e4fcca22-4dc4-4c64-af4b-f205995de890/Screenshot_2021-04-13_at_2.41.04_AM.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/e4fcca22-4dc4-4c64-af4b-f205995de890/Screenshot_2021-04-13_at_2.41.04_AM.png)
 
+
 Slices expalined!!
 
 Slice is a datastructure with three different fields. So whenever you try to make a copy of the slice, you are not duplicating the array, you are just duplicating the data structure fields, but the array it points to remains the same 🙂
 
 ![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/7b47efc2-7598-4c46-8c69-1da0850f4523/Screenshot_2021-04-13_at_2.48.04_AM.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/7b47efc2-7598-4c46-8c69-1da0850f4523/Screenshot_2021-04-13_at_2.48.04_AM.png)
 
-Similarly for other data types as mentioned here. 
+Similarly for other data types as mentioned here.
 
 ![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/adf5d673-7944-4b2e-9ba0-c17006d2cc05/Screenshot_2021-04-13_at_2.49.43_AM.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/adf5d673-7944-4b2e-9ba0-c17006d2cc05/Screenshot_2021-04-13_at_2.49.43_AM.png)
 
@@ -214,6 +232,7 @@ Key-value pairs
     - Similar to what has been done in before image but better 🙂
 
         ![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b06edf84-0f0b-476c-9fd6-b4aa04337d74/Screenshot_2021-05-18_at_1.51.08_AM.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/b06edf84-0f0b-476c-9fd6-b4aa04337d74/Screenshot_2021-05-18_at_1.51.08_AM.png)
+
 
 ### Go Routines
 
