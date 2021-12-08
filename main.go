@@ -2,9 +2,11 @@ package main
 
 import (
 	"bufio"
+	"context"
 	"encoding/json"
 	"fmt"
 	"math/big"
+	mathrand "math/rand"
 	"os"
 	"runtime"
 	"sort"
@@ -297,6 +299,65 @@ func receive(e, o, q <-chan int) {
 			return
 		}
 	}
+}
+
+func send2(e, o chan<- int) {
+	for i := 0; i < 10; i++ {
+		if i%2 == 0 {
+			e <- i
+		} else {
+			o <- i
+		}
+	}
+	close(e)
+	close(o)
+}
+
+func receive2(e, o <-chan int, fanIn chan<- int) {
+	var wgr sync.WaitGroup
+	wgr.Add(2)
+	go func() {
+		for v := range e {
+			fanIn <- v
+		}
+		wgr.Done()
+	}()
+	go func() {
+		for v := range o {
+			fanIn <- v
+		}
+		wgr.Done()
+	}()
+	wgr.Wait()
+	close(fanIn)
+}
+
+func getRequests(c chan<- int) {
+	for i := 0; i < 15; i++ {
+		c <- i
+	}
+	close(c)
+}
+
+func executeRequestsThrottle(requestQueue, outputQueue chan int, throttleLimit int) {
+	var wgr1 sync.WaitGroup
+	wgr1.Add(throttleLimit)
+	for i := 0; i < throttleLimit; i++ {
+		go func() {
+			for v := range requestQueue {
+				outputQueue <- burstTimeRequired(v)
+			}
+			wgr1.Done()
+		}()
+	}
+	fmt.Println("Number of Go Routines FanOutIn. After:", runtime.NumGoroutine())
+	wgr1.Wait()
+	close(outputQueue)
+}
+
+func burstTimeRequired(v int) int {
+	time.Sleep(time.Second * 2)
+	return v + mathrand.Intn(100)
 }
 
 func main() {
@@ -771,6 +832,51 @@ func main() {
 	q := make(chan int)
 	go send(e, o, q)
 	receive(e, o, q)
+
+	// Fan-in
+	e1 := make(chan int)
+	o1 := make(chan int)
+	fanIn := make(chan int)
+	go send2(e1, o1)
+	go receive2(e1, o1, fanIn)
+	for v := range fanIn {
+		fmt.Println("FanIn:", v)
+	}
+	fmt.Println("Exit fanIn!!")
+
+	// time.Sleep(time.Second * 15)
+	fmt.Println("Number of Go Routines FanOutIn. Before:", runtime.NumGoroutine())
+	// FanOutIn with throttling
+	CPURequestQueue := make(chan int)
+	OutputQueue := make(chan int)
+	go getRequests(CPURequestQueue)
+	go executeRequestsThrottle(CPURequestQueue, OutputQueue, 10)
+	for r := range OutputQueue {
+		fmt.Println("FanOutIn throttle", r)
+	}
+
+	// Context
+	ctx := context.Background()
+	fmt.Println("Number of Go Routines Context. Before:", runtime.NumGoroutine(), "Err:", ctx.Err())
+	go func() {
+		n := 0
+		for {
+			select {
+			case v1 := <-ctx.Done():
+				fmt.Println("CTX is done for!!", v1)
+				return
+			default:
+				fmt.Println("CTX", n)
+				n++
+			}
+		}
+	}()
+	fmt.Println("Number of Go Routines FanOutIn. Middle:", runtime.NumGoroutine())
+
+	ctx, cancel := context.WithCancel(ctx)
+	fmt.Println("Cancelling context now", ctx.Err())
+	cancel()
+	fmt.Println("Error now", ctx.Err())
 
 	// Takes input but treats space as seperator
 	fmt.Println("Write just a word:")
