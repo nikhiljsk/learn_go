@@ -37,6 +37,25 @@ go get -u <package_name> # get or update a package
 # ENVS related to private
 go env GOPRIVATE
 go env -w GOPRIVATE="github.ibm.com"
+
+# To generate documentation from a package
+go doc <packge>.<symb>.<method>
+(or)
+# Localhost server
+godoc -http=:6060
+godoc <package> <method> # Only the docs
+godoc -src <pcakge> <method> # Shows the source declaration
+
+go ./...
+# You can also just paste the url of your go source code in godoc.org
+# and then it is cached, you can refetch it.
+
+go fmt # Formats code
+go vet # Reports suspicious constructs
+golint # Suggests style mistakes
+
+go test -v -bench .
+go tool cover -html=cover.out -o=cover.html
 ```
 
 - GOROOT contains the binary exec file of go
@@ -86,6 +105,11 @@ go env -w GOPRIVATE="github.ibm.com"
 - You could find the race condition by using `go build -race main.go` which tries to see if any data race is found and the number. Gomaxproc is the number of cores you want it to run on. Default is max
 - There are read and write locks as well in Mutex
 - Send-only and receive-only type channel, directional channels. These channels can start out bidirectional, but some can become directional simply by assigning a regular channel to a variable of a constrained type.
+- With Panic deferred functions run, but with Fatal the program exists abruptly.
+- We don't use Public and Private in golang. We only use Visible/Not-visible or exported or not-exported. For functions that are visible outside the package we start with Capital letter as naming convention and functions that are used only for calculations inside the package we use small letters
+- In documentation the starting word should be the function name and then go on to define the function. For package, you'll have to start with `Package <name>` If the documentation is huge, just use doc.go file
+- Test files doesn't have to have the same name as the source file, and the function names can be different as well, and they can be different packages as well. But it's best practice to do all that! 🙂
+- But for Examples, you'll have to give the same name (case-sensitive) in order for that to work. The function name has to start with capitals
 
 # Go: The Complete Developer's Guide
 
