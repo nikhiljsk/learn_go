@@ -5,12 +5,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
+	"log"
 	"math/big"
 	mathrand "math/rand"
 	"os"
 	"runtime"
 	"sort"
 	"strconv"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -26,8 +29,8 @@ var wg sync.WaitGroup
 var wg5 sync.WaitGroup
 
 type jsontemp struct {
-	Doors int    `json:"number_of_doors"`       // How the name shoud appear in JSON
-	Color string `json:"what_color, omitempty"` // Omit if the value is empty in the result JSON
+	Doors int    `json:"number_of_doors"` // How the name shoud appear in JSON
+	Color string `json:"color,omitempty"` // Omit if the value is empty in the result JSON
 }
 
 // iota :) - Works only with const
@@ -143,6 +146,15 @@ func sumAll(numbers ...int) int {
 	return int(total)
 }
 
+// DiffAll this is how you write documentation. This is now an exported function!!
+func DiffAll(numbers ...int) int {
+	var total int
+	for _, v := range numbers {
+		total -= v
+	}
+	return int(total)
+}
+
 func callbackFunc(f func(num ...int) int, allNumbers ...int) int {
 	// Find the sum of only odd numbers
 	var oddNumbers []int
@@ -225,17 +237,17 @@ func pointersExp(s *sedan) {
 
 }
 
-type groupedJsonTemp []jsontemp
+type groupedJSONTemp []jsontemp
 
-func (jt groupedJsonTemp) Len() int {
+func (jt groupedJSONTemp) Len() int {
 	return len(jt)
 }
 
-func (jt groupedJsonTemp) Less(i int, j int) bool {
+func (jt groupedJSONTemp) Less(i int, j int) bool {
 	return jt[i].Doors > jt[j].Doors
 }
 
-func (jt groupedJsonTemp) Swap(i int, j int) {
+func (jt groupedJSONTemp) Swap(i int, j int) {
 	jt[i], jt[j] = jt[j], jt[i]
 }
 
@@ -360,6 +372,40 @@ func burstTimeRequired(v int) int {
 	return v + mathrand.Intn(100)
 }
 
+func f() {
+	defer func() {
+		if r := recover(); r != nil {
+			fmt.Println("Recovered for value:", r)
+		}
+	}()
+	fmt.Println("Calling g")
+	g(0)
+	fmt.Println("Returned from g") // This is never called
+}
+
+func g(i int) {
+	if i > 3 {
+		fmt.Println("Panicking!")
+		panic(fmt.Sprintf("%v", i))
+	}
+	defer fmt.Println("Defer in g:", i)
+	fmt.Println("In g:", i)
+	g(i + 1)
+}
+
+type custErr struct {
+	errorString string
+}
+
+func (e custErr) Error() string {
+	return fmt.Sprintf("Custom Error: %v", e.errorString)
+}
+
+func callErrorfunc(e error) { // Passing custErr as error, as error interface only needs to implement Error() string
+	fmt.Println("C callErrorfunc:", e.(custErr).errorString) // This is assertion
+	// fmt.Println("C Info:", e.errorString) // This won't work
+}
+
 func main() {
 	fmt.Println("Hello!", 1>>100)
 
@@ -408,7 +454,8 @@ func main() {
 	// print ASCII
 	fmt.Println("Print ASCII")
 	for i := 98; i < 122; i++ {
-		fmt.Printf("%v\t%v\t%#U\t%v\t%v\n", i, string(i), i, strconv.Itoa(i), string(123858))
+		// fmt.Printf("%v\t%v\t%#U\t%v\t%v\n", i, string(i), i, strconv.Itoa(i), string(123858))
+		fmt.Printf("%v\t%#U\t%v\n", i, i, strconv.Itoa(i))
 	}
 
 	// If conditionals
@@ -705,10 +752,10 @@ func main() {
 	// Sort vehicles based on number of doors
 	// allVehicles := []jsontemp{v1, v2} // If you implement this way, you won't be able to do `func (a []jsontemp)` so use a type for this
 	// Now, since we'll be using sort.Sort, we have to impement Interface with three funcs (Len, Swap, Less)
-	dataJson := groupedJsonTemp{v1, v2}
-	fmt.Println("Before struct:", dataJson)
-	sort.Sort(dataJson)
-	fmt.Println("After struct:", dataJson)
+	dataJSON := groupedJSONTemp{v1, v2}
+	fmt.Println("Before struct:", dataJSON)
+	sort.Sort(dataJSON)
+	fmt.Println("After struct:", dataJSON)
 
 	// Concurrency
 	fmt.Println("Concurrency")
@@ -877,6 +924,59 @@ func main() {
 	fmt.Println("Cancelling context now", ctx.Err())
 	cancel()
 	fmt.Println("Error now", ctx.Err())
+
+	// File writing
+	file, err := os.Create("/tmp/tmp.txt")
+	if err != nil {
+		fmt.Println("Hey. Found an error mate:", err)
+		return
+	}
+	msg := strings.NewReader("Hello. I'm Nikhil JSK!")
+	io.Copy(file, msg)
+	file.Close()
+
+	file, err = os.Open("/tmp/tmp.txt")
+	if err != nil {
+		fmt.Println("Err, ", err)
+		return
+	}
+	defer file.Close()
+
+	fr, err := io.ReadAll(file)
+	if err != nil {
+		fmt.Println("Not able to read the file", err)
+		return
+	}
+	fmt.Println("Able to read the file!!", string(fr))
+
+	fl, err := os.Open("/tmp/tmp.txt")
+	if err != nil {
+		log.Println("Found an error. That's bad :( ", err) // Prints with Timestamp
+	}
+	log.SetOutput(fl)
+	log.Println("Hey I'm logging into the file")
+	fmt.Println("Hey I'm logging into the file")
+
+	fr2, err := io.ReadAll(file)
+	if err != nil {
+		fmt.Println("Not able to read the file", err) // You can similarly create a new error strings using error.New("...")
+		return
+	}
+	fmt.Println("Able to read the log", string(fr2))
+
+	// Recover example - If panic starts, it executes all the defer functions in LIFO manner and never executes the next statement in code flow
+	f()
+
+	// Custom Error
+	ce := custErr{
+		errorString: "Don't call me :()",
+	}
+
+	fmt.Println(ce.Error())
+	fmt.Printf("%T\n", ce.Error())
+	fmt.Println(ce) // both would return the same
+	fmt.Printf("%T\n", ce)
+	callErrorfunc(ce)
 
 	// Takes input but treats space as seperator
 	fmt.Println("Write just a word:")
