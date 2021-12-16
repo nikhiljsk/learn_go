@@ -110,6 +110,9 @@ go tool cover -html=cover.out -o=cover.html
 - In documentation the starting word should be the function name and then go on to define the function. For package, you'll have to start with `Package <name>` If the documentation is huge, just use doc.go file
 - Test files doesn't have to have the same name as the source file, and the function names can be different as well, and they can be different packages as well. But it's best practice to do all that! 🙂
 - But for Examples, you'll have to give the same name (case-sensitive) in order for that to work. The function name has to start with capitals
+- Semaphore - In computer science, a semaphore is a variable or abstract data type used to control access to a common resource by multiple threads and avoid critical section problems in a concurrent system such as a multitasking operating system.
+- An unbuffered channel cannot hold values, so it has to send and recieve at the same time. So we launch a go routine for that
+- Using range to iterate over channel output? don't forget to close that.
 
 # Go: The Complete Developer's Guide
 
