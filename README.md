@@ -1,4 +1,4 @@
-[1](https://www.notion.so/Golang-491f172b8d6f4aa7961293626e1536ed) [2](https://ibm-learning.udemy.com/course/learn-how-to-code/learn/lecture/11921686#overview)
+Source: [1](https://ibm-learning.udemy.com/course/learn-how-to-code/learn/lecture/11921686#overview) [2](https://ibm-learning.udemy.com/course/go-the-complete-developers-guide/learn/lecture/7817382?start=0#overview) [3](https://www.tutorialspoint.com/go/index.htm) [4](https://www.youtube.com/playlist?list=PLRAV69dS1uWQGDQoBYMZWKjzuhCaOnBpa)
 
 # Table of Contents
 
