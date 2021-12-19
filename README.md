@@ -1,6 +1,11 @@
 Source: [1](https://ibm-learning.udemy.com/course/learn-how-to-code/learn/lecture/11921686#overview) [2](https://ibm-learning.udemy.com/course/go-the-complete-developers-guide/learn/lecture/7817382?start=0#overview) [3](https://www.tutorialspoint.com/go/index.htm) [4](https://www.youtube.com/playlist?list=PLRAV69dS1uWQGDQoBYMZWKjzuhCaOnBpa)
 
 # Table of Contents
+Notes from various sources (links mentioned above):
+* Udemy - Learn How To Code: Google's Go (golang) Programming Language
+* Udemy - Go: The Complete Developer's Guide
+* Golang - TutorialsPoint
+* Golang - Hitesh Choudhary
 
 # Learn How To Code: Google's Go (golang) Programming Language
 
