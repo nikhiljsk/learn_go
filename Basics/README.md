@@ -56,6 +56,15 @@ golint # Suggests style mistakes
 
 go test -v -bench .
 go tool cover -html=cover.out -o=cover.html
+
+go list -m -versions github.com/gorilla/mux
+go list -m all
+go mod tidy
+go mod verfiy
+go mod vendor # Used for getting all the packages and store them locally
+go run -mod=vendor main.go # Using this will fetch the packages directly from the vendor
+go mod why github.com/gorilla/mux # tells why you are dependent on that module
+go mod graph # Lists all for above command instead of one
 ```
 
 - GOROOT contains the binary exec file of go
@@ -279,3 +288,50 @@ Key-value pairs
 - If you pass a value into a channel, then you have to receive it somewhere.
 
     ![https://s3-us-west-2.amazonaws.com/secure.notion-static.com/6422f0cf-6849-4c63-9ecd-04a6bc3f81fd/Screenshot_2021-05-18_at_12.44.52_PM.png](https://s3-us-west-2.amazonaws.com/secure.notion-static.com/6422f0cf-6849-4c63-9ecd-04a6bc3f81fd/Screenshot_2021-05-18_at_12.44.52_PM.png)
+
+
+# Golang - TutorialsPoint
+
+- Static typed language, to keep it simple some operations like Pointer arithmetic, typed inheritance etc are intentionally avoided
+- Types - Numberic, String, Boolean and Derived (all other)
+- Fixed values in constants are also called literals
+- For constant variables use Uppercase
+- Bitwise operators (+, | ^)(and, or, XOR) also << & >>
+- goto statement exists in golang
+
+```go
+LOOP: for a < 20 {
+      if a == 15 {
+         /* skip the iteration */
+         a = a + 1
+         goto LOOP
+      }
+      fmt.Printf("value of a: %d\n", a)
+      a++
+   }
+```
+
+- By default, Go uses call by value to pass arguments
+- Local - Both in main and function-specific, Global - Scope is entire program, Formal Parameters - Function specific and precedence over global
+- Copy(target, source) For slices
+- For interface, both structs must implement area function, and then you need to create a new function with getArea(s shape) that you can pass any of the two structs and call the respective area function
+- lvalues - Appear on both sides of operator (variables), rvalues only on the right side of assignment operator (constants)
+- Go does not support Method and operator overloading
+- Method sets are applicable whenever you are calling ().function.
+    - So (e employee) getData (){} can’t accept `var e *employee` e.getData.
+    - But (e *employee) getData(){} can accept `var e *employee` and `var e employee` e.getData!
+- `const` values must be declared and initialized in the same line.
+
+
+
+# Golang - Hitesh Choudhary
+
+- Lexer is something that validates the grammar of the language, and in golang it is built-in to add semi-colons to the code. So they are not mandatory
+- There is a standard date and time that you have to use to format any date
+- Memory allocation
+    - new() → Memory is allocated but no init and is zeroed storage (No data can be entered)
+    - mase() → Memory is alloc and init, non-zeroed
+- There is a threshold after which Garbage collection starts, and this parameter is configurable in Runtime package
+- Whenever a request is made using the http package, it has to be closed using `Close` explicitly
+- Modules in go are introduced in 2019. The downloaded modules are stored under `~/go/pkg/mod/cache/download` and in go.mod file, indirect means the library is not yet used in any of the go files. In go.sum, all the checksums are stored. `go mod tidy` is used to refresh the go.mod file.
+- `go mod verify` will verify the packages with the checksum, `go list -m all` shows all the dependencies of current package
